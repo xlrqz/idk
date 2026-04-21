@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · Aether Supply</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="login-view" class="login-wrap">
+    <div class="card login-card">
+      <div class="section-eyebrow">Admin</div>
+      <h1 class="admin-title">Sign in</h1>
+      <p class="section-sub" style="margin-bottom:18px">This checks your password on the server through a Vercel API route.</p>
+      <form id="login-form" class="stack">
+        <div class="field">
+          <label>Password</label>
+          <input id="password" type="password" autocomplete="current-password" required />
+        </div>
+        <button class="btn-primary" type="submit">Unlock Admin</button>
+        <a class="btn-outline" href="/">Back to Store</a>
+        <p id="login-error" class="muted"></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="admin-view" class="admin-shell hidden">
+    <aside class="admin-sidebar stack">
+      <div>
+        <div class="section-eyebrow">Dashboard</div>
+        <div class="admin-title">Admin Panel</div>
+        <p class="muted">Edits save to local browser storage in this starter.</p>
+      </div>
+      <a class="btn-outline" href="/">Open Store</a>
+      <button class="btn-muted" id="logout-btn" type="button">Log Out</button>
+    </aside>
+
+    <main class="admin-main stack">
+      <div class="card">
+        <div class="section-eyebrow">Products</div>
+        <h2 class="section-title" style="font-size:34px">Add or edit catalog items</h2>
+        <p class="section-sub">Use this to rename items, change prices, swap icons, or create new generic products.</p>
+      </div>
+
+      <div class="card">
+        <form id="product-form" class="stack">
+          <input type="hidden" id="product-id" />
+          <div class="field"><label>Name</label><input id="product-name" required /></div>
+          <div class="field"><label>Category</label><input id="product-cat" required /></div>
+          <div class="field"><label>Price</label><input id="product-price" type="number" min="0" step="0.01" required /></div>
+          <div class="field"><label>Icon</label><input id="product-icon" maxlength="4" required /></div>
+          <div class="field"><label>Description</label><textarea id="product-desc" rows="4" required></textarea></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn-primary" type="submit">Save Product</button>
+            <button class="btn-muted" type="button" id="reset-form">Clear Form</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="product-rows"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script>
+    const DEFAULT_PRODUCTS = JSON.parse(localStorage.getItem('store_products') || '[]');
+    const $ = (s) => document.querySelector(s);
+    let products = DEFAULT_PRODUCTS;
+
+    function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+    function save(){ localStorage.setItem('store_products', JSON.stringify(products)); }
+    function resetForm(){ $('#product-id').value=''; $('#product-form').reset(); }
+    function renderRows(){
+      const rows = $('#product-rows');
+      rows.innerHTML = products.map(p => `<tr>
+        <td>${p.icon} ${p.name}</td>
+        <td>${p.cat}</td>
+        <td>$${Number(p.price).toFixed(2)}</td>
+        <td>
+          <button class="btn-muted" type="button" onclick="editProduct(${p.id})">Edit</button>
+          <button class="btn-outline" type="button" onclick="deleteProduct(${p.id})">Delete</button>
+        </td>
+      </tr>`).join('');
+    }
+    window.editProduct = function(id){
+      const p = products.find(x => x.id === id); if(!p) return;
+      $('#product-id').value = p.id;
+      $('#product-name').value = p.name;
+      $('#product-cat').value = p.cat;
+      $('#product-price').value = p.price;
+      $('#product-icon').value = p.icon;
+      $('#product-desc').value = p.desc;
+      window.scrollTo(0,0);
+    }
+    window.deleteProduct = function(id){
+      products = products.filter(p => p.id !== id);
+      save(); renderRows(); toast('Product removed');
+    }
+
+    async function checkSession(){
+      const res = await fetch('/api/session');
+      const data = await res.json();
+      if(data.authenticated){
+        $('#login-view').classList.add('hidden');
+        $('#admin-view').classList.remove('hidden');
+        products = JSON.parse(localStorage.getItem('store_products') || '[]');
+        renderRows();
+      }
+    }
+
+    $('#login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('#login-error').textContent = '';
+      const res = await fetch('/api/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: $('#password').value })
+      });
+      if (!res.ok) {
+        $('#login-error').textContent = 'Invalid password or missing server env vars.';
+        return;
+      }
+      await checkSession();
+      toast('Admin unlocked');
+    });
+
+    $('#logout-btn').addEventListener('click', async () => {
+      await fetch('/api/logout');
+      $('#admin-view').classList.add('hidden');
+      $('#login-view').classList.remove('hidden');
+      toast('Logged out');
+    });
+
+    $('#product-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = $('#product-id').value;
+      const payload = {
+        id: id ? Number(id) : Date.now(),
+        name: $('#product-name').value.trim(),
+        cat: $('#product-cat').value.trim(),
+        price: Number($('#product-price').value),
+        icon: $('#product-icon').value.trim(),
+        desc: $('#product-desc').value.trim()
+      };
+      if (id) products = products.map(p => p.id === Number(id) ? payload : p);
+      else products.unshift(payload);
+      save(); renderRows(); resetForm(); toast('Product saved');
+    });
+
+    $('#reset-form').addEventListener('click', resetForm);
+    checkSession();
+  </script>
+</body>
+</html>

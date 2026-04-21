@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aether Supply</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="notice-bar">Generic storefront template with secure admin login and editable catalog</div>
+  <div class="trust-bar">
+    <span>— Premium Everyday Goods</span>
+    <span>— Clean Catalog Layout</span>
+    <span>— Secure Admin Login</span>
+  </div>
+
+  <nav>
+    <div class="nav-logo" onclick="showPage('home')">Aether Supply</div>
+    <div class="nav-links">
+      <button onclick="showPage('home')" id="nav-home" class="active">Home</button>
+      <button onclick="showPage('products')" id="nav-products">Products</button>
+      <button onclick="showPage('about')" id="nav-about">About</button>
+    </div>
+    <div class="cart-pill" onclick="openCart()">Cart <div class="cart-badge" id="cart-badge">0</div></div>
+  </nav>
+
+  <div class="overlay" id="overlay" onclick="closeCart()"></div>
+  <div class="cart-sidebar" id="cart-sidebar">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <button class="btn-muted" onclick="closeCart()">Close</button>
+    </div>
+    <div class="cart-items" id="cart-items"></div>
+    <div class="cart-footer">
+      <div class="line"><span>Subtotal</span><span id="cart-subtotal">$0.00</span></div>
+      <div class="line total"><span>Total</span><span id="cart-total">$0.00</span></div>
+      <button class="checkout-btn" type="button">Demo Checkout</button>
+    </div>
+  </div>
+
+  <div class="page active" id="page-home">
+    <section class="hero">
+      <div class="hero-rule"></div>
+      <div class="hero-eyebrow">Minimal Storefront Template</div>
+      <h1>Clean.<br><em>Editable.</em><br>Ready.</h1>
+      <p class="hero-sub">A generic Vercel-ready storefront with a hidden admin page, server-side password check, editable catalog, and cart quantity controls.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="showPage('products')">Browse Products</button>
+        <a class="btn-outline" href="/admin">Open Admin</a>
+      </div>
+    </section>
+    <div class="full-divider"></div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">Featured</div>
+        <h2 class="section-title">Popular picks</h2>
+        <p class="section-sub">You can replace these with your own items from the admin panel after login.</p>
+      </div>
+      <div class="products-grid" id="featured-grid"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-products">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">Catalog</div>
+        <h2 class="section-title">All products</h2>
+        <p class="section-sub">This template is intentionally generic so you can adapt it to legal products you actually plan to sell.</p>
+      </div>
+      <div class="products-grid" id="all-products-grid"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-about">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">About</div>
+        <h2 class="section-title">Built for easy customization</h2>
+        <p class="section-sub">Use this as a starter for apparel, home goods, accessories, or any other normal storefront. The password is checked by Vercel API routes instead of being exposed in client-side code.</p>
+      </div>
+      <div class="card">
+        <p class="muted">Need shared product edits across devices? Connect a real database later. This starter stores product changes in browser local storage so you can test the admin flow without extra setup.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-main">
+      <div class="footer-brand">
+        <div class="footer-brand-name">Aether Supply</div>
+        <p>Generic storefront starter built for Vercel deployment and safe customization.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Site</h4>
+        <a onclick="showPage('home')">Home</a>
+        <a onclick="showPage('products')">Products</a>
+        <a href="/admin">Admin</a>
+      </div>
+      <div class="footer-col">
+        <h4>Build</h4>
+        <a>Vercel Ready</a>
+        <a>Server-side Login</a>
+        <a>Editable Catalog</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© <span id="year"></span> Aether Supply</p>
+      <p>Generic storefront template</p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
